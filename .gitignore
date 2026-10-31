@@ -1,0 +1,58 @@
+# Banco local: a distribuição da base é externa
+*.bak
+*.mdf
+*.ndf
+*.ldf
+*.trn
+
+# Credenciais e configurações pessoais
+.env
+.env.*
+*.credentials
+*.secrets
+secrets.*
+*.pfx
+*.key
+/.agents/
+/.codex/
+
+# Power BI: somente o dashboard final é versionável
+*.pbix
+!AdventureWorks_Dashboard.pbix
+*.pbix.lock
+*.pbit.lock
+~$*
+**/.pbi/
+
+# Backups e checkpoints
+*.before-*.pbix
+*.failed-*.pbix
+*_BACKUP*.pbix
+*_PRE_APLICACAO*.pbix
+*_POS_APLICACAO*.pbix
+*.pbix.bak
+*.pbit.bak
+
+# Temporários, auditorias, logs e caches
+.audit-tmp/
+.codex-*/
+.tmp-*/
+temp/
+tmp/
+*.log
+*.tmp
+*.temp
+*.cache
+*.swp
+Thumbs.db
+.DS_Store
+
+# Planejamento local
+Plano_Execucao_*.xlsx
+
+# Ferramentas e IDEs locais
+.vs/
+.vscode/
+.idea/
+bin/
+obj/

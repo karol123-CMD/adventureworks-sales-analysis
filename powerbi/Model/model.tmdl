@@ -1,0 +1,22 @@
+﻿model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: pt-BR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["FactVendas","DimTerritorio","DimProduto","DimCliente"]
+
+ref table FactVendas
+ref table DimTerritorio
+ref table DimProduto
+ref table DimCliente
+ref table DimCalendario
+ref table Medidas
+ref table 'Aparencia PoC'
+
+ref cultureInfo pt-BR
+

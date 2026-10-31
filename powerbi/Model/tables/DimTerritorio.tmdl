@@ -1,0 +1,46 @@
+﻿table DimTerritorio
+
+	column TerritoryID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: TerritoryID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Territorio
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Territorio
+
+		annotation SummarizationSetBy = Automatic
+
+	column CountryRegionCode
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CountryRegionCode
+
+		annotation SummarizationSetBy = Automatic
+
+	column GrupoRegiao
+		dataType: string
+		summarizeBy: none
+		sourceColumn: GrupoRegiao
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimTerritorio = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database("localhost\SQLEXPRESS", "AdventureWorks2022"),
+				    dbo_vw_DimTerritorio = Fonte{[Schema="dbo",Item="vw_DimTerritorio"]}[Data],
+				    #"Colunas Removidas" = Table.RemoveColumns(dbo_vw_DimTerritorio,{"SalesYTD", "SalesLastYear", "CostYTD", "CostLastYear"})
+				in
+				    #"Colunas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,65 @@
+﻿table DimCliente
+
+	column CustomerID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CustomerID
+
+		annotation SummarizationSetBy = Automatic
+
+	column PersonID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: PersonID
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: StoreID
+
+		annotation SummarizationSetBy = Automatic
+
+	column TerritoryID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: TerritoryID
+
+		annotation SummarizationSetBy = Automatic
+
+	column TipoCliente
+		dataType: string
+		summarizeBy: none
+		sourceColumn: TipoCliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column NomeCliente
+		dataType: string
+		summarizeBy: none
+		sourceColumn: NomeCliente
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimCliente = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database("localhost\SQLEXPRESS", "AdventureWorks2022"),
+				    dbo_vw_DimCliente = Fonte{[Schema="dbo",Item="vw_DimCliente"]}[Data]
+				in
+				    dbo_vw_DimCliente
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

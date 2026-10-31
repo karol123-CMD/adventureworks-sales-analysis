@@ -1,0 +1,27 @@
+{
+  "name": "AdventureWorks Dark Semantic",
+  "dataColors": ["#FF756D", "#A98CFF", "#FF9B95", "#C0AEFF", "#D95861", "#7E63D4", "#35C6A3", "#D99A3B"],
+  "background": "#090617",
+  "foreground": "#F7F5FC",
+  "tableAccent": "#FF756D",
+  "good": "#35C6A3",
+  "neutral": "#B8B2C7",
+  "bad": "#D95861",
+  "null": "#B8B2C7",
+  "hyperlink": "#A98CFF",
+  "visitedHyperlink": "#C0AEFF",
+  "textClasses": {
+    "callout": {"fontFace": "Verdana", "color": "#F7F5FC", "fontSize": 23},
+    "title": {"fontFace": "Verdana"},
+    "header": {"fontFace": "Verdana"},
+    "label": {"fontFace": "Verdana"}
+  },
+  "visualStyles": {
+    "*": {"*": {"background": [{"color": {"solid": {"color": "#19132D"}}}]}},
+    "slicer": {"*": {"items": [{"background": {"solid": {"color": "#19132D"}}}]}},
+    "page": {"*": {
+      "outspace": [{"color": {"solid": {"color": "#090617"}}}],
+      "background": [{"transparency": 0, "color": {"solid": {"color": "#090617"}}}]
+    }}
+  }
+}

@@ -1,0 +1,113 @@
+﻿table DimCalendario
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: General Date
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ano
+		formatString: 0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Ano]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MesNumero
+		formatString: 0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MesNumero]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MesNome
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MesNome]
+		sortByColumn: MesNumero
+
+		annotation SummarizationSetBy = Automatic
+
+	column MesAbrev
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MesAbrev]
+		sortByColumn: MesNumero
+
+		annotation SummarizationSetBy = Automatic
+
+	column AnoMes
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [AnoMes]
+		sortByColumn: AnoMesNumero
+
+		annotation SummarizationSetBy = Automatic
+
+	column AnoMesNumero
+		formatString: 0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [AnoMesNumero]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Trimestre]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dia
+		formatString: 0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Dia]
+
+		annotation SummarizationSetBy = Automatic
+
+	column InicioMes = DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 )
+		dataType: dateTime
+		formatString: General Date
+		summarizeBy: none
+
+	column AnoCompleto =
+			VAR PrimeiroAno = YEAR ( MINX ( ALL ( FactVendas ), FactVendas[OrderDate] ) )
+			VAR UltimoAno = YEAR ( MAXX ( ALL ( FactVendas ), FactVendas[OrderDate] ) )
+			RETURN [Ano] > PrimeiroAno && [Ano] < UltimoAno
+		dataType: boolean
+		formatString: """Sim"";""Sim"";""Não"""
+		summarizeBy: none
+
+	column StatusPeriodo = IF ( [AnoCompleto], "Ano completo", "Ano parcial" )
+		dataType: string
+		summarizeBy: none
+
+	partition DimCalendario = calculated
+		mode: import
+		source =
+				
+				ADDCOLUMNS (
+				    CALENDAR (
+				        MIN ( FactVendas[OrderDate] ),
+				        MAX ( FactVendas[OrderDate] )
+				    ),
+				    "Ano", YEAR ( [Date] ),
+				    "MesNumero", MONTH ( [Date] ),
+				    "MesNome", FORMAT ( [Date], "mmmm" ),
+				    "MesAbrev", FORMAT ( [Date], "mmm" ),
+				    "AnoMes", FORMAT ( [Date], "yyyy-MM" ),
+				    "AnoMesNumero", YEAR ( [Date] ) * 100 + MONTH ( [Date] ),
+				    "Trimestre", "T" & FORMAT ( [Date], "Q" ),
+				    "Dia", DAY ( [Date] )
+				)
+
+	annotation PBI_Id = 7a8189e095584c7db194f4c279286e30
+

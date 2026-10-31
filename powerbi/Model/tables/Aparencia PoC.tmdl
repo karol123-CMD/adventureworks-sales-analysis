@@ -1,0 +1,77 @@
+table 'Aparencia PoC'
+	lineageTag: 5d8f85d5-6f02-4a3f-84ac-4d329dc21ec6
+
+	measure 'PoC Cor Receita' = ```
+			
+			  VAR ModoSelecionado =
+			      SELECTEDVALUE('Aparencia PoC'[Modo], "Claro")
+			  RETURN
+			      IF(
+			          ModoSelecionado = "Escuro",
+			          "#61D4E5",
+			          "#0069D2"
+			      )
+			```
+		lineageTag: e0b8bc73-4ce1-4edb-8b4f-d1befd4d6a3b
+
+	measure 'PoC Cor Texto' = ```
+			
+			  VAR ModoSelecionado =
+			      SELECTEDVALUE('Aparencia PoC'[Modo], "Claro")
+			  RETURN
+			      IF(
+			          ModoSelecionado = "Escuro",
+			          "#F2F5FA",
+			          "#171827"
+			      )
+			```
+		lineageTag: 8d20f9c2-dcf0-4e5d-898b-a1b29b976ace
+
+	measure 'PoC Cor Superficie' = ```
+			
+			  VAR ModoSelecionado =
+			      SELECTEDVALUE('Aparencia PoC'[Modo], "Claro")
+			  RETURN
+			      IF(
+			          ModoSelecionado = "Escuro",
+			          "#1B2230",
+			          "#FFFFFF"
+			      )
+			```
+		lineageTag: b46d9e8a-2781-4411-a9b7-8e6b982c539c
+
+	measure 'PoC Cor Fundo' = ```
+			
+			  VAR ModoSelecionado =
+			      SELECTEDVALUE('Aparencia PoC'[Modo], "Claro")
+			  RETURN
+			      IF(
+			          ModoSelecionado = "Escuro",
+			          "#10141D",
+			          "#F5F3FF"
+			      )
+			```
+		lineageTag: 4260a734-e4a2-424c-98d3-95b558b0bb25
+
+	column Modo
+		lineageTag: 1061e2c8-4c7f-49b5-9b44-cd89bb307d4b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Modo]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Aparencia PoC' = calculated
+		mode: import
+		source = ```
+				
+				  DATATABLE(
+				      "Modo", STRING,
+				      {
+				          {"Claro"},
+				          {"Escuro"}
+				      }
+				  )
+				```
+
+	annotation PBI_Id = 54ba874f94664ff4bffe118d7a7de8cd

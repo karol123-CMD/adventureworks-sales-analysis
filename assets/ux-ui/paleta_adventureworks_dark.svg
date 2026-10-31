@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Paleta AdventureWorks Dark</title>
+  <desc id="desc">Tokens finais do dashboard escuro AdventureWorks com seus códigos hexadecimais.</desc>
+  <rect width="1200" height="620" fill="#090617"/>
+  <text x="48" y="62" fill="#F7F5FC" font-family="Segoe UI, sans-serif" font-size="30" font-weight="700">AdventureWorks Dark</text>
+  <text x="48" y="94" fill="#B8B2C7" font-family="Segoe UI, sans-serif" font-size="17">Identidade final - roxo profundo, coral e lavanda</text>
+  <g font-family="Segoe UI, sans-serif" font-size="15">
+    <g transform="translate(48 130)"><rect width="250" height="92" rx="8" fill="#090617" stroke="#38285E"/><text x="16" y="35" fill="#F7F5FC">Fundo da página</text><text x="16" y="65" fill="#B8B2C7">#090617</text></g>
+    <g transform="translate(330 130)"><rect width="250" height="92" rx="8" fill="#19132D" stroke="#38285E"/><text x="16" y="35" fill="#F7F5FC">Superfície principal</text><text x="16" y="65" fill="#B8B2C7">#19132D</text></g>
+    <g transform="translate(612 130)"><rect width="250" height="92" rx="8" fill="#21183A" stroke="#38285E"/><text x="16" y="35" fill="#F7F5FC">Superfície secundária</text><text x="16" y="65" fill="#B8B2C7">#21183A</text></g>
+    <g transform="translate(894 130)"><rect width="250" height="92" rx="8" fill="#100B22" stroke="#38285E"/><text x="16" y="35" fill="#F7F5FC">Cabeçalho escuro</text><text x="16" y="65" fill="#B8B2C7">#100B22</text></g>
+    <g transform="translate(48 246)"><rect width="250" height="92" rx="8" fill="#38285E"/><text x="16" y="35" fill="#F7F5FC">Bordas</text><text x="16" y="65" fill="#F7F5FC">#38285E</text></g>
+    <g transform="translate(330 246)"><rect width="250" height="92" rx="8" fill="#43345F"/><text x="16" y="35" fill="#F7F5FC">Grades e divisórias</text><text x="16" y="65" fill="#F7F5FC">#43345F</text></g>
+    <g transform="translate(612 246)"><rect width="250" height="92" rx="8" fill="#F7F5FC"/><text x="16" y="35" fill="#19132D">Texto principal</text><text x="16" y="65" fill="#38285E">#F7F5FC</text></g>
+    <g transform="translate(894 246)"><rect width="250" height="92" rx="8" fill="#B8B2C7"/><text x="16" y="35" fill="#19132D">Texto secundário</text><text x="16" y="65" fill="#38285E">#B8B2C7</text></g>
+    <g transform="translate(48 362)"><rect width="250" height="92" rx="8" fill="#FF756D"/><text x="16" y="35" fill="#19132D">Receita</text><text x="16" y="65" fill="#19132D">#FF756D</text></g>
+    <g transform="translate(330 362)"><rect width="250" height="92" rx="8" fill="#A98CFF"/><text x="16" y="35" fill="#19132D">Margem estimada</text><text x="16" y="65" fill="#19132D">#A98CFF</text></g>
+    <g transform="translate(612 362)"><rect width="250" height="92" rx="8" fill="#35C6A3"/><text x="16" y="35" fill="#090617">Resultado favorável</text><text x="16" y="65" fill="#090617">#35C6A3</text></g>
+    <g transform="translate(894 362)"><rect width="250" height="92" rx="8" fill="#D99A3B"/><text x="16" y="35" fill="#090617">Extremo de Tukey</text><text x="16" y="65" fill="#090617">#D99A3B</text></g>
+  </g>
+  <text x="48" y="520" fill="#FF756D" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Coral = série principal</text>
+  <text x="330" y="520" fill="#A98CFF" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Lavanda = comparação</text>
+  <text x="612" y="520" fill="#35C6A3" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Verde = favorável comprovado</text>
+  <text x="894" y="520" fill="#D99A3B" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Âmbar = extremo</text>
+  <text x="48" y="580" fill="#B8B2C7" font-family="Segoe UI, sans-serif" font-size="16">Valores monetários em u.m. | Margem bruta estimada | Média territorial como referência</text>
+</svg>

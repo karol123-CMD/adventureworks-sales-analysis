@@ -1,0 +1,201 @@
+﻿table FactVendas
+
+	column SalesOrderID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: SalesOrderID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column SalesOrderDetailID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: SalesOrderDetailID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column OrderDate
+		dataType: dateTime
+		formatString: Long Date
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CustomerID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CustomerID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TerritoryID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: TerritoryID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductID
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: ProductID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderQty
+		dataType: int64
+		formatString: 0
+		summarizeBy: sum
+		sourceColumn: OrderQty
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: decimal
+		formatString: #,##0.00
+		summarizeBy: sum
+		sourceColumn: UnitPrice
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column LineTotal
+		dataType: double
+		formatString: #,##0.00
+		summarizeBy: sum
+		sourceColumn: LineTotal
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StandardCost
+		dataType: decimal
+		formatString: #,##0.00
+		summarizeBy: sum
+		sourceColumn: StandardCost
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustoTotal
+		dataType: decimal
+		formatString: #,##0.00
+		summarizeBy: sum
+		sourceColumn: CustoTotal
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column LucroBruto
+		dataType: double
+		formatString: #,##0.00
+		summarizeBy: sum
+		sourceColumn: LucroBruto
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ReceitaProdutosAposDesconto
+		dataType: double
+		formatString: #,##0.00
+		summarizeBy: sum
+		sourceColumn: ReceitaProdutosAposDesconto
+
+	column CustoUnitarioHistorico
+		dataType: decimal
+		formatString: #,##0.00
+		summarizeBy: none
+		sourceColumn: CustoUnitarioHistorico
+
+	column CustoUnitarioAtual
+		dataType: decimal
+		formatString: #,##0.00
+		summarizeBy: none
+		sourceColumn: CustoUnitarioAtual
+
+	column CustoUnitarioUtilizado
+		dataType: decimal
+		formatString: #,##0.00
+		summarizeBy: none
+		sourceColumn: CustoUnitarioUtilizado
+
+	column FonteCusto
+		dataType: string
+		summarizeBy: none
+		sourceColumn: FonteCusto
+
+	column IndicadorFallback
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: IndicadorFallback
+
+	column MargemBrutaEstimadaValor
+		dataType: decimal
+		formatString: #,##0.00
+		summarizeBy: sum
+		sourceColumn: MargemBrutaEstimadaValor
+
+	column MargemBrutaEstimadaPercentual
+		dataType: decimal
+		formatString: 0.00%
+		summarizeBy: none
+		sourceColumn: MargemBrutaEstimadaPercentual
+
+	column Status
+		dataType: int64
+		formatString: 0
+		summarizeBy: sum
+		sourceColumn: Status
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactVendas = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database("localhost\SQLEXPRESS", "AdventureWorks2022"),
+				    dbo_vw_FactVendas = Fonte{[Schema="dbo",Item="vw_FactVendas"]}[Data],
+				    #"Tipo Alterado" = Table.TransformColumnTypes(dbo_vw_FactVendas,{{"OrderDate", type date}, {"UnitPrice", Currency.Type}, {"Status", Int64.Type}})
+				in
+				    #"Tipo Alterado"
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

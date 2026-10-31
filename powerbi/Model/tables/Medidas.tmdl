@@ -1,0 +1,1134 @@
+table Medidas
+
+	measure 'Receita de Produtos' = SUM ( FactVendas[ReceitaProdutosAposDesconto] )
+		description: Valor dos itens após desconto da linha, sem impostos e frete.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0.00
+
+	measure 'Unidades Vendidas' = SUM ( FactVendas[OrderQty] )
+		description: Quantidade de unidades no universo padrão de vendas.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0
+
+	measure Pedidos = DISTINCTCOUNT ( FactVendas[SalesOrderID] )
+		description: Quantidade distinta de pedidos no universo padrão.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0
+
+	measure 'Clientes Ativos' = DISTINCTCOUNT ( FactVendas[CustomerID] )
+		description: Clientes com ao menos uma venda no contexto de filtro.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0
+
+	measure 'Produtos Vendidos' = DISTINCTCOUNT ( FactVendas[ProductID] )
+		description: Produtos com ao menos uma venda no contexto de filtro.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0
+
+	measure 'Clientes Cadastrados' = DISTINCTCOUNT ( DimCliente[CustomerID] )
+		description: Clientes existentes na dimensão, independentemente de vendas.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0
+
+	measure 'Produtos Cadastrados' = DISTINCTCOUNT ( DimProduto[ProductID] )
+		description: Produtos existentes na dimensão, independentemente de vendas.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0
+
+	measure 'Custo Total Estimado' = SUM ( FactVendas[CustoTotal] )
+		description: Custo histórico quando disponível e custo padrão atual como fallback.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0.00
+
+	measure 'Margem Bruta Estimada' = SUM ( FactVendas[MargemBrutaEstimadaValor] )
+		description: Receita de produtos menos custo total estimado.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0.00
+
+	measure 'Margem Bruta Estimada %' = DIVIDE ( [Margem Bruta Estimada], [Receita de Produtos] )
+		description: Margem bruta estimada dividida pela receita de produtos.
+		displayFolder: 01 KPIs Base
+		formatString: 0.00%
+
+	measure 'Ticket Médio' = DIVIDE ( [Receita de Produtos], [Pedidos] )
+		description: Receita de produtos por pedido distinto.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0.00
+
+	measure 'Receita Média por Cliente' = DIVIDE ( [Receita de Produtos], [Clientes Ativos] )
+		description: Receita de produtos por cliente ativo.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0.00
+
+	measure 'Receita Média por Produto' = DIVIDE ( [Receita de Produtos], [Produtos Vendidos] )
+		description: Receita de produtos por produto vendido.
+		displayFolder: 01 KPIs Base
+		formatString: #,##0.00
+
+	measure 'Receita Total' =
+			
+			[Receita de Produtos]
+		description: Alias legado mantido para compatibilidade com visuais existentes.
+		formatString: #,##0.00
+		isHidden
+
+	measure 'Quantidade Vendida' =
+			
+			[Unidades Vendidas]
+		formatString: 0
+		isHidden
+
+	measure 'Total de Pedidos' =
+			
+			[Pedidos]
+		formatString: 0
+		isHidden
+
+	measure 'Custo Total' =
+			
+			[Custo Total Estimado]
+		description: Alias legado mantido para compatibilidade.
+		formatString: #,##0.00
+		isHidden
+
+	measure 'Lucro Bruto' =
+			
+			[Margem Bruta Estimada]
+		description: Alias legado; o resultado representa margem bruta estimada.
+		formatString: #,##0.00
+		isHidden
+
+	measure 'Margem Bruta %' =
+			
+			[Margem Bruta Estimada %]
+		description: Alias legado; percentual de margem bruta estimada.
+		formatString: 0.00%;-0.00%;0.00%
+
+	measure 'Preço Médio Unitário' =
+			
+			DIVIDE ( [Receita Total], [Quantidade Vendida] )
+		formatString: #,##0.00
+		isHidden
+
+	measure 'Receita Mesmo Período Ano Anterior' =
+			CALCULATE ( [Receita de Produtos], SAMEPERIODLASTYEAR ( DimCalendario[Date] ) )
+		description: Receita no mesmo conjunto de datas deslocado um ano pelo calendário contínuo.
+		displayFolder: 02 Inteligência Temporal
+		formatString: #,##0.00
+
+	measure 'Receita Ano Anterior' =
+			[Receita Mesmo Período Ano Anterior]
+		description: Alias legado mantido para compatibilidade.
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Crescimento YoY' =
+			
+			VAR ReceitaAnterior = [Receita Mesmo Período Ano Anterior]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( ReceitaAnterior ),
+			        [Receita de Produtos] - ReceitaAnterior
+			    )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Crescimento YoY %' =
+			VAR ContextoSelecionado = ISCROSSFILTERED ( DimCalendario )
+			VAR AnoMaisRecenteCompleto =
+			    CALCULATE (
+			        MAX ( DimCalendario[Ano] ),
+			        REMOVEFILTERS ( DimCalendario ),
+			        DimCalendario[AnoCompleto] = TRUE ()
+			    )
+			VAR ReceitaAnterior = [Receita Ano Anterior]
+			RETURN
+			    IF (
+			        ContextoSelecionado,
+			        IF (
+			            NOT ISBLANK ( ReceitaAnterior ),
+			            DIVIDE ( [Crescimento YoY], ReceitaAnterior )
+			        ),
+			        CALCULATE (
+			            DIVIDE ( [Crescimento YoY], [Receita Ano Anterior] ),
+			            REMOVEFILTERS ( DimCalendario ),
+			            DimCalendario[Ano] = AnoMaisRecenteCompleto
+			        )
+			    )
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Receita Mês Anterior' =
+			
+			CALCULATE (
+			    [Receita de Produtos],
+			    DATEADD ( DimCalendario[Date], -1, MONTH )
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Crescimento MoM' =
+			
+			VAR ReceitaAnterior = [Receita Mês Anterior]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( ReceitaAnterior ),
+			        [Receita de Produtos] - ReceitaAnterior
+			    )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Crescimento MoM %' =
+			
+			VAR ReceitaAnterior = [Receita Mês Anterior]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( ReceitaAnterior ),
+			        DIVIDE ( [Crescimento MoM], ReceitaAnterior )
+			    )
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Receita Acumulada no Ano' = TOTALYTD ( [Receita de Produtos], DimCalendario[Date] )
+		description: Receita acumulada desde o início do ano no calendário validado.
+		displayFolder: 02 Inteligência Temporal
+		formatString: #,##0.00
+
+	measure 'Receita YTD' =
+			[Receita Acumulada no Ano]
+		description: Alias legado mantido para compatibilidade.
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Pedidos Mês Anterior' = CALCULATE ( [Pedidos], DATEADD ( DimCalendario[Date], -1, MONTH ) )
+		description: Pedidos no mês calendário imediatamente anterior.
+		displayFolder: 02 Inteligência Temporal
+		formatString: #,##0
+
+	measure 'Variação de Pedidos' = [Pedidos] - [Pedidos Mês Anterior]
+		description: Diferença absoluta de pedidos frente ao mês anterior.
+		displayFolder: 02 Inteligência Temporal
+		formatString: #,##0
+
+	measure 'Margem no Período Anterior' = CALCULATE ( [Margem Bruta Estimada], DATEADD ( DimCalendario[Date], -1, MONTH ) )
+		description: Margem bruta estimada no mês calendário anterior.
+		displayFolder: 02 Inteligência Temporal
+		formatString: #,##0.00
+
+	measure 'Ticket no Período Anterior' = CALCULATE ( [Ticket Médio], DATEADD ( DimCalendario[Date], -1, MONTH ) )
+		description: Ticket médio no mês calendário anterior.
+		displayFolder: 02 Inteligência Temporal
+		formatString: #,##0.00
+
+	measure 'Aviso de Período Parcial' =
+			VAR AnosParciais =
+			    CONCATENATEX (
+			        FILTER ( VALUES ( DimCalendario[Ano] ), CALCULATE ( SELECTEDVALUE ( DimCalendario[AnoCompleto], FALSE () ) ) = FALSE () ),
+			        DimCalendario[Ano], ", "
+			    )
+			RETURN IF ( NOT ISBLANK ( AnosParciais ), "Atenção: período parcial — " & AnosParciais )
+		description: Aviso textual para visuais que incluam anos de borda incompletos.
+		displayFolder: 02 Inteligência Temporal
+
+	measure 'Margem Bruta % Ano Anterior' =
+			
+			CALCULATE (
+			    [Margem Bruta %],
+			    SAMEPERIODLASTYEAR ( DimCalendario[Date] )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Variação Margem YoY p.p.' =
+			
+			VAR MargemAnterior = [Margem Bruta % Ano Anterior]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( MargemAnterior ),
+			        [Margem Bruta %] - MargemAnterior
+			    )
+		formatString: 0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Participação Receita Categoria %' =
+			
+			DIVIDE (
+			    [Receita Total],
+			    CALCULATE (
+			        [Receita Total],
+			        ALLSELECTED ( DimProduto[Categoria] )
+			    )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Ranking Categoria Receita' =
+			
+			RANKX (
+			    ALLSELECTED ( DimProduto[Categoria] ),
+			    [Receita Total],
+			    ,
+			    DESC,
+			    DENSE
+			)
+		formatString: 0
+		isHidden
+
+	measure 'Participação Receita Produto %' =
+			
+			DIVIDE (
+			    [Receita Total],
+			    CALCULATE (
+			        [Receita Total],
+			        ALLSELECTED ( DimProduto[ProductID] )
+			    )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		isHidden
+
+	measure 'Ranking Produto Receita' =
+			VAR ProdutoAtual = SELECTEDVALUE ( DimProduto[ProductID] )
+			VAR ReceitaAtual = [Receita de Produtos]
+			VAR ProdutosBase =
+			    ADDCOLUMNS ( ALLSELECTED ( DimProduto[ProductID] ), "@Receita", CALCULATE ( [Receita de Produtos] ) )
+			RETURN
+			    IF (
+			        NOT ISBLANK ( ProdutoAtual ) && NOT ISBLANK ( ReceitaAtual ),
+			        1 + COUNTROWS (
+			            FILTER (
+			                ProdutosBase,
+			                [@Receita] > ReceitaAtual
+			                    || ( [@Receita] = ReceitaAtual && DimProduto[ProductID] < ProdutoAtual )
+			            )
+			        )
+			    )
+		description: Posição determinística por receita decrescente e ProductID crescente.
+		formatString: 0
+		isHidden
+
+	measure 'Participação Receita Território %' =
+			
+			DIVIDE (
+			    [Receita Total],
+			    CALCULATE (
+			        [Receita Total],
+			        ALLSELECTED ( DimTerritorio[Territorio] )
+			    )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Ranking Território Receita' =
+			
+			RANKX (
+			    ALLSELECTED ( DimTerritorio[Territorio] ),
+			    [Receita Total],
+			    ,
+			    DESC,
+			    DENSE
+			)
+		formatString: 0
+		isHidden
+
+	measure 'Participação Receita Cliente %' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			VAR ReceitaSelecionada = SUMX ( ClientesComReceita, [@Receita] )
+			RETURN
+			    IF (
+			        NOT ISBLANK ( [Receita Total] ),
+			        DIVIDE ( [Receita Total], ReceitaSelecionada )
+			    )
+		formatString: 0.00%
+		isHidden
+
+	measure 'Ranking Cliente Receita' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			VAR ClienteAtual = SELECTEDVALUE ( DimCliente[CustomerID] )
+			VAR ReceitaAtual = [Receita de Produtos]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( ReceitaAtual ) && NOT ISBLANK ( ClienteAtual ),
+			        1 + COUNTROWS (
+			            FILTER (
+			                ClientesComReceita,
+			                [@Receita] > ReceitaAtual
+			                    || ( [@Receita] = ReceitaAtual && DimCliente[CustomerID] < ClienteAtual )
+			            )
+			        )
+			    )
+		description: Posição determinística por receita decrescente e CustomerID crescente.
+		formatString: 0
+		isHidden
+
+	measure 'Receita Acumulada Produtos' =
+			VAR PosicaoAtual = [Ranking Produto Receita]
+			VAR ProdutosBase =
+			    ADDCOLUMNS ( ALLSELECTED ( DimProduto[ProductID] ), "@Receita", CALCULATE ( [Receita de Produtos] ) )
+			VAR ProdutosAtePosicao =
+			    TOPN ( PosicaoAtual, ProdutosBase, [@Receita], DESC, DimProduto[ProductID], ASC )
+			RETURN
+			    IF ( NOT ISBLANK ( PosicaoAtual ), SUMX ( ProdutosAtePosicao, [@Receita] ) )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Participação Acumulada Produtos %' =
+			
+			DIVIDE (
+			    [Receita Acumulada Produtos],
+			    CALCULATE (
+			        [Receita Total],
+			        ALLSELECTED ( DimProduto[ProductID] )
+			    )
+			)
+		formatString: 0.00%
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Percentual Acumulado de Produtos' =
+			DIVIDE ( [Ranking Produto Receita], COUNTROWS ( ALLSELECTED ( DimProduto[ProductID] ) ) )
+		description: Percentual de produtos percorridos na ordenação determinística do Pareto.
+		displayFolder: 03 Pareto e Concentração
+		formatString: 0.00%
+
+	measure 'Produtos para Atingir 80% da Receita' =
+			MINX (
+			    FILTER (
+			        ALLSELECTED ( DimProduto[ProductID] ),
+			        CALCULATE ( [Participação Acumulada Produtos %] ) >= 0.8
+			    ),
+			    CALCULATE ( [Ranking Produto Receita] )
+			)
+		description: Menor quantidade de produtos necessária para alcançar ao menos 80% da receita no contexto selecionado.
+		displayFolder: 03 Pareto e Concentração
+		formatString: #,##0
+
+	measure 'Percentual de Produtos para 80% da Receita' =
+			DIVIDE ( [Produtos para Atingir 80% da Receita], COUNTROWS ( ALLSELECTED ( DimProduto[ProductID] ) ) )
+		description: Percentual da base de produtos correspondente ao limiar de 80% da receita.
+		displayFolder: 03 Pareto e Concentração
+		formatString: 0.00%
+
+	measure 'Classificação Pareto Produto' =
+			VAR ParticipacaoAcumulada = [Participação Acumulada Produtos %]
+			VAR ParticipacaoAnterior = ParticipacaoAcumulada - [Participação Receita Produto %]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( ParticipacaoAcumulada ), BLANK (),
+			        ParticipacaoAnterior < 0.8, "A — até atingir 80% da receita",
+			        ParticipacaoAnterior < 0.95, "B — acima de 80% até 95%",
+			        "C — acima de 95%"
+			    )
+		description: Curva ABC; a entidade que cruza o limiar permanece na classe anterior.
+		isHidden
+
+	measure 'Receita Acumulada Clientes' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			VAR PosicaoAtual = [Ranking Cliente Receita]
+			VAR ClientesAtePosicao =
+			    TOPN (
+			        PosicaoAtual,
+			        ClientesComReceita,
+			        [@Receita], DESC,
+			        DimCliente[CustomerID], ASC
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( PosicaoAtual ), SUMX ( ClientesAtePosicao, [@Receita] ) )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Participação Acumulada Clientes %' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			VAR PosicaoAtual = [Ranking Cliente Receita]
+			VAR ClientesAtePosicao =
+			    TOPN (
+			        PosicaoAtual,
+			        ClientesComReceita,
+			        [@Receita], DESC,
+			        DimCliente[CustomerID], ASC
+			    )
+			VAR ReceitaAcumulada = SUMX ( ClientesAtePosicao, [@Receita] )
+			VAR ReceitaSelecionada = SUMX ( ClientesComReceita, [@Receita] )
+			RETURN
+			    IF ( NOT ISBLANK ( PosicaoAtual ), DIVIDE ( ReceitaAcumulada, ReceitaSelecionada ) )
+		formatString: 0.00%
+		isHidden
+
+	measure 'Percentual Acumulado de Clientes' =
+			DIVIDE ( [Ranking Cliente Receita], COUNTROWS ( ALLSELECTED ( DimCliente[CustomerID] ) ) )
+		description: Percentual de clientes percorridos na ordenação determinística do Pareto.
+		displayFolder: 03 Pareto e Concentração
+		formatString: 0.00%
+
+	measure 'Clientes para Atingir 80% da Receita' =
+			MINX (
+			    FILTER (
+			        ALLSELECTED ( DimCliente[CustomerID] ),
+			        CALCULATE ( [Participação Acumulada Clientes %] ) >= 0.8
+			    ),
+			    CALCULATE ( [Ranking Cliente Receita] )
+			)
+		description: Menor quantidade de clientes necessária para alcançar ao menos 80% da receita no contexto selecionado.
+		displayFolder: 03 Pareto e Concentração
+		formatString: #,##0
+
+	measure 'Percentual de Clientes para 80% da Receita' =
+			DIVIDE ( [Clientes para Atingir 80% da Receita], COUNTROWS ( ALLSELECTED ( DimCliente[CustomerID] ) ) )
+		description: Percentual da base de clientes correspondente ao limiar de 80% da receita.
+		displayFolder: 03 Pareto e Concentração
+		formatString: 0.00%
+
+	measure 'Classificação Pareto Cliente' =
+			VAR ParticipacaoAcumulada = [Participação Acumulada Clientes %]
+			VAR ParticipacaoAnterior = ParticipacaoAcumulada - [Participação Receita Cliente %]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( ParticipacaoAcumulada ), BLANK (),
+			        ParticipacaoAnterior < 0.8, "A — até atingir 80% da receita",
+			        ParticipacaoAnterior < 0.95, "B — acima de 80% até 95%",
+			        "C — acima de 95%"
+			    )
+		description: Curva ABC; a entidade que cruza o limiar permanece na classe anterior.
+		isHidden
+
+	measure 'Receita Média Produto' =
+			
+			AVERAGEX (
+			    ALLSELECTED ( DimProduto[ProductID] ),
+			    [Receita Total]
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Receita Mediana Produto' =
+			
+			MEDIANX (
+			    ALLSELECTED ( DimProduto[ProductID] ),
+			    [Receita Total]
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Receita Mínima Produto' =
+			
+			MINX (
+			    ALLSELECTED ( DimProduto[ProductID] ),
+			    [Receita Total]
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Receita Máxima Produto' =
+			
+			MAXX (
+			    ALLSELECTED ( DimProduto[ProductID] ),
+			    [Receita Total]
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Amplitude Receita Produto' =
+			
+			[Receita Máxima Produto] - [Receita Mínima Produto]
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Desvio Padrão Receita Produto' =
+			
+			STDEVX.P (
+			    ALLSELECTED ( DimProduto[ProductID] ),
+			    [Receita Total]
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Coeficiente Variação Produto' =
+			
+			DIVIDE (
+			    [Desvio Padrão Receita Produto],
+			    [Receita Média Produto]
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Desvio Receita Produto vs Média' =
+			
+			[Receita Total] - [Receita Média Produto]
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Desvio Receita Produto vs Média %' =
+			
+			DIVIDE (
+			    [Desvio Receita Produto vs Média],
+			    [Receita Média Produto]
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Q1 Receita Produto' =
+			
+			PERCENTILEX.INC (
+			    ALLSELECTED ( DimProduto[ProductID] ),
+			    [Receita Total],
+			    0.25
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Q3 Receita Produto' =
+			
+			PERCENTILEX.INC (
+			    ALLSELECTED ( DimProduto[ProductID] ),
+			    [Receita Total],
+			    0.75
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'IQR Receita Produto' =
+			
+			[Q3 Receita Produto] - [Q1 Receita Produto]
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Limite Inferior Outlier Produto' =
+			
+			[Q1 Receita Produto] - ( 1.5 * [IQR Receita Produto] )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Limite Superior Outlier Produto' = 
+			
+			[Q3 Receita Produto] + ( 1.5 * [IQR Receita Produto] ) 
+			
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Classificação Outlier Produto' =
+			
+			VAR ReceitaProduto = [Receita Total]
+			VAR LimiteInferior = [Limite Inferior Outlier Produto]
+			VAR LimiteSuperior = [Limite Superior Outlier Produto]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( ReceitaProduto ), BLANK (),
+			        ReceitaProduto < LimiteInferior, "Observação extrema inferior",
+			        ReceitaProduto > LimiteSuperior, "Observação extrema superior",
+			        "Dentro dos limites de Tukey"
+			    )
+		isHidden
+
+	measure 'Receita Média Território' =
+			
+			AVERAGEX (
+			    ALLSELECTED ( DimTerritorio[Territorio] ),
+			    [Receita Total]
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Desvio Padrão Receita Território' =
+			
+			STDEVX.P (
+			    ALLSELECTED ( DimTerritorio[Territorio] ),
+			    [Receita Total]
+			)
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Coeficiente Variação Território' =
+			
+			DIVIDE (
+			    [Desvio Padrão Receita Território],
+			    [Receita Média Território]
+			)
+		formatString: 0.00%
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Desvio Receita Território vs Média' =
+			
+			[Receita Total] - [Receita Média Território]
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Desvio Receita Território vs Média %' =
+			
+			DIVIDE (
+			    [Desvio Receita Território vs Média],
+			    [Receita Média Território]
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		isHidden
+
+	measure 'Classificação Território vs Média' =
+			
+			VAR Desvio = [Desvio Receita Território vs Média]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( [Receita Total] ), BLANK (),
+			        Desvio > 0, "Acima da média",
+			        Desvio < 0, "Abaixo da média",
+			        "Na média"
+			    )
+		isHidden
+
+	measure 'Receita Média Cliente' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			RETURN
+			    AVERAGEX ( ClientesComReceita, [@Receita] )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Receita Mediana Cliente' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			RETURN
+			    MEDIANX ( ClientesComReceita, [@Receita] )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Q1 Receita Cliente' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			RETURN
+			    PERCENTILEX.INC ( ClientesComReceita, [@Receita], 0.25 )
+		formatString: #,##0.00
+		isHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Q3 Receita Cliente' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			RETURN
+			    PERCENTILEX.INC ( ClientesComReceita, [@Receita], 0.75 )
+		formatString: #,##0.00
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'IQR Receita Cliente' = [Q3 Receita Cliente] - [Q1 Receita Cliente]
+		formatString: #,##0.00
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Limite Inferior Outlier Cliente' = [Q1 Receita Cliente] - ( 1.5 * [IQR Receita Cliente] )
+		formatString: #,##0.00
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Limite Superior Outlier Cliente' = [Q3 Receita Cliente] + ( 1.5 * [IQR Receita Cliente] )
+		formatString: #,##0.00
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Classificação Outlier Cliente' =
+			VAR ReceitaCliente = [Receita Total]
+			VAR LimiteInferior = [Limite Inferior Outlier Cliente]
+			VAR LimiteSuperior = [Limite Superior Outlier Cliente]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( ReceitaCliente ), BLANK (),
+			        ReceitaCliente < LimiteInferior, "Observação extrema inferior",
+			        ReceitaCliente > LimiteSuperior, "Observação extrema superior",
+			        "Dentro dos limites de Tukey"
+			    )
+
+	measure 'Receita Top 10 Clientes' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			VAR TopClientes =
+			    TOPN (
+			        10,
+			        ClientesComReceita,
+			        [@Receita], DESC,
+			        DimCliente[CustomerID], ASC
+			    )
+			RETURN
+			    SUMX ( TopClientes, [@Receita] )
+		formatString: #,##0.00
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Participação Top 10 Clientes %' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			VAR TopClientes =
+			    TOPN (
+			        10,
+			        ClientesComReceita,
+			        [@Receita], DESC,
+			        DimCliente[CustomerID], ASC
+			    )
+			RETURN
+			    DIVIDE (
+			        SUMX ( TopClientes, [@Receita] ),
+			        SUMX ( ClientesComReceita, [@Receita] )
+			    )
+		formatString: 0.00%
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Clientes Outliers Superiores' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			RETURN
+			    COUNTROWS (
+			        FILTER (
+			            ClientesComReceita,
+			            VAR ReceitaCliente = [@Receita]
+			            VAR LimiteSuperior = CALCULATE ( [Limite Superior Outlier Cliente] )
+			            RETURN ReceitaCliente > LimiteSuperior
+			        )
+			    )
+		formatString: 0
+
+	measure 'Desvio Receita Cliente vs Média' =
+			VAR MediaCliente = [Receita Média Cliente]
+			RETURN
+			    IF ( NOT ISBLANK ( [Receita Total] ), [Receita Total] - MediaCliente )
+		formatString: #,##0.00
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Desvio Receita Cliente vs Média %' = DIVIDE ( [Desvio Receita Cliente vs Média], [Receita Média Cliente] )
+		formatString: 0.00%
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Produtos Analisados' =
+			
+			COUNTROWS (
+			    FILTER (
+			        ALLSELECTED ( DimProduto[ProductID] ),
+			        NOT ISBLANK ( [Receita Total] )
+			    )
+			)
+		formatString: 0
+
+	measure 'Clientes Analisados' =
+			
+			COUNTROWS (
+			    FILTER (
+			        ALLSELECTED ( DimCliente[CustomerID] ),
+			        NOT ISBLANK ( [Receita Total] )
+			    )
+			)
+		formatString: 0
+
+	measure 'Produtos Outliers Superiores' =
+			
+			COUNTROWS (
+			    FILTER (
+			        ALLSELECTED ( DimProduto[ProductID] ),
+			        NOT ISBLANK ( [Receita Total] )
+			            && [Classificação Outlier Produto] = "Observação extrema superior"
+			    )
+			)
+		formatString: 0
+
+	measure 'Produtos Outliers Inferiores' =
+			
+			COUNTROWS (
+			    FILTER (
+			        ALLSELECTED ( DimProduto[ProductID] ),
+			        NOT ISBLANK ( [Receita Total] )
+			            && [Classificação Outlier Produto] = "Observação extrema inferior"
+			    )
+			)
+		formatString: 0
+
+	measure 'Produtos Outliers Total' =
+			
+			[Produtos Outliers Superiores] + [Produtos Outliers Inferiores]
+		formatString: 0
+
+	measure 'Clientes Outliers Inferiores' =
+			VAR ClientesBase =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            SUMMARIZE (
+			                DimCliente,
+			                DimCliente[CustomerID],
+			                DimCliente[NomeCliente]
+			            ),
+			            "@Receita", CALCULATE ( [Receita Total] )
+			        ),
+			        REMOVEFILTERS (
+			            DimCliente[CustomerID],
+			            DimCliente[NomeCliente]
+			        )
+			    )
+			VAR ClientesComReceita =
+			    FILTER ( ClientesBase, NOT ISBLANK ( [@Receita] ) )
+			RETURN
+			    COUNTROWS (
+			        FILTER (
+			            ClientesComReceita,
+			            VAR ReceitaCliente = [@Receita]
+			            VAR LimiteInferior = CALCULATE ( [Limite Inferior Outlier Cliente] )
+			            RETURN ReceitaCliente < LimiteInferior
+			        )
+			    )
+		formatString: 0
+
+	measure 'Clientes Outliers Total' = [Clientes Outliers Superiores] + [Clientes Outliers Inferiores]
+		formatString: 0
+
+	measure 'Diferença Média vs Mediana Produto %' =
+			
+			DIVIDE (
+			    [Receita Média Produto] - [Receita Mediana Produto],
+			    [Receita Mediana Produto]
+			)
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Grupo
+		isHidden
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Grupo]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Medidas = calculated
+		mode: import
+		source =
+				
+				DATATABLE (
+				    "Grupo", STRING,
+				    {
+				        { "KPIs" }
+				    }
+				)
+
+	annotation PBI_Id = 2930347f7c6f4c859398832d3ea452e6
+

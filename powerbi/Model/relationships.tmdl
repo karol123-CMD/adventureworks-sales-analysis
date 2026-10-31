@@ -1,0 +1,27 @@
+relationship AutoDetected_d4a0812a-7e12-4287-a418-3673e3334092
+	fromColumn: FactVendas.CustomerID
+	toColumn: DimCliente.CustomerID
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+
+relationship AutoDetected_8185c0a4-e317-4e3a-ba2e-b174f76835ce
+	fromColumn: FactVendas.TerritoryID
+	toColumn: DimTerritorio.TerritoryID
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+
+relationship AutoDetected_35e90047-a87d-4996-90cc-1af2db17d8b8
+	fromColumn: FactVendas.ProductID
+	toColumn: DimProduto.ProductID
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+
+relationship 0d87afd3-01df-13db-282b-281e3e11d002
+	fromColumn: FactVendas.OrderDate
+	toColumn: DimCalendario.Date
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
