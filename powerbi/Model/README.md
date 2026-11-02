@@ -4,6 +4,8 @@ Este diretório é um snapshot TMDL para inspeção, revisão e rastreabilidade 
 
 A desserialização integral desta pasta pelo serializador TMDL local permanece impedida por uma incompatibilidade preexistente de propriedades `description` em `tables/Medidas.tmdl`; por isso o snapshot não deve ser tratado como pacote integralmente importável. Os dois objetos sincronizados nesta revisão foram comparados diretamente com a serialização oficial do modelo ativo.
 
+As quatro partições M importadas declaram `Sql.Database("localhost\SQLEXPRESS", "AdventureWorks2022")`. Esse endereço é uma configuração local genérica do snapshot, não uma credencial. Para reproduzir o projeto em outra instância, ajuste a fonte no Power Query do PBIX; o snapshot não está parametrizado.
+
 O snapshot representa `FactVendas`, `DimCliente`, `DimProduto`, `DimTerritorio`, `DimCalendario`, `Medidas` e `Aparencia PoC`. A fato e as três dimensões de negócio são importadas pelo Power Query; `DimCalendario` é a tabela calculada em DAX ativa. Os relacionamentos são muitos-para-um e filtram das dimensões para a fato.
 
 Estado de sincronização comprovado em 30/10/2026:

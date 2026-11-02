@@ -4,6 +4,16 @@ Projeto de Business Intelligence construído sobre o AdventureWorks2022 para ana
 
 ![Visão executiva do dashboard AdventureWorks](assets/screenshots/01-visao-executiva.png)
 
+## Em 30 segundos
+
+| Aspecto | Evidência no repositório |
+|---|---|
+| Problema | Transformar a base transacional AdventureWorks2022 em uma visão confiável de vendas, rentabilidade estimada, concentração e desempenho territorial. |
+| Solução | Camada analítica em SQL Server, modelo dimensional, Power Query, medidas DAX e dashboard de cinco páginas no Power BI. |
+| Resultados | 80% da receita está concentrada em 1.607 clientes (8,41%) e 64 produtos (24,06%); Southwest representa 22,02% da receita. |
+| Validação | A execução registrada comparou SQL e DAX em 4.782 pontos sem divergências no conjunto testado; esta revisão documental não reexecutou os testes. |
+| Entregáveis | PBIX canônico, 23 scripts SQL, snapshot TMDL auditável, documentação de regras, mapeamentos, validação e insights. |
+
 ## Resumo executivo
 
 O dashboard responde a perguntas de gestão sem confundir descrição estatística com causalidade ou meta. O universo padrão considera pedidos enviados, linhas com receita positiva e quantidade positiva. A receita representa itens após desconto, sem impostos e frete; valores monetários são apresentados em `u.m.` porque a base não autoriza inferir moeda real.
@@ -132,6 +142,8 @@ Os scripts analíticos são somente leitura; apenas a etapa 03 cria ou altera vi
 2. Para atualizar dados, disponibilize `AdventureWorks2022` e as views analíticas na instância esperada pelo modelo ou ajuste a fonte local no Power Query.
 3. Não trate o manifesto TMDL como substituto do PBIX: ele existe para inspeção e compreensão do modelo, com limitações registradas no [`README do modelo`](powerbi/Model/README.md).
 
+O snapshot TMDL registra `localhost\SQLEXPRESS` como fonte das quatro partições importadas. Essa é uma configuração local genérica, sem credenciais; confirme a fonte ativa no PBIX e ajuste-a no Power Query quando usar outra instância.
+
 O PBIX contém dados importados; para uma publicação real, revise governança, permissões e exposição de dados antes de usar qualquer serviço externo.
 
 ## Limitações e cuidados de interpretação
@@ -147,7 +159,7 @@ O PBIX contém dados importados; para uma publicação real, revise governança,
 ## Estrutura do repositório
 
 ```text
-AdventureWorks/
+adventureworks-sales-analysis/
 |-- AdventureWorks_Dashboard.pbix
 |-- README.md
 |-- assets/
@@ -162,4 +174,6 @@ AdventureWorks/
 
 ## Estado atual
 
-O dashboard e sua documentação estão finalizados para apresentação em portfólio local. O repositório ainda não é declarado como publicado, não há URL pública do relatório e nenhuma publicação foi realizada por esta revisão.
+O projeto está concluído e este repositório público é sua apresentação de portfólio no GitHub. O PBIX canônico, as capturas finais, a camada SQL, o snapshot TMDL e a documentação técnica estão versionados aqui.
+
+A publicação se limita aos artefatos do projeto no GitHub: não há URL pública do relatório no Power BI Service, e esta revisão não publica nem atualiza conteúdo nesse serviço.
